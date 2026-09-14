@@ -29,7 +29,7 @@ solana-client = "2.1"
 
 # Solana Attestation Service
 solana-attestation-service-client = "1.0.9"
-borsh         = "0.10"
+borsh         = "1.7"
 dashmap       = "6"
 
 # HTTP

@@ -1,0 +1,103 @@
+# One-file dstack compose for Private AI Gateway under git-launcher.
+#
+# Default routes: Redpill as first-party ACI service + OpenRouter
+# (openai-compatible). Solana SVM settlement lives in clawd-tee-gateway
+# (TeeProofV2), not in this process.
+#
+# Deploy from this directory after filling gateway.env:
+#
+#   phala deploy -n private-ai-gateway -c compose.yaml -e gateway.env \
+#     --instance-type tdx.large --disk-size 80G --wait
+#
+# The compose inlines the launcher pin, static gateway config, and initial
+# upstream config so dstack's compose_hash covers the complete launch policy.
+# Secrets stay in encrypted env (gateway.env); only variable references are
+# measured. The gateway copies the read-only upstream seed into its mutable
+# state path only when no mutable config exists yet.
+
+services:
+  private-ai-gateway:
+    image: docker.io/dstacktee/git-launcher@sha256:4437dce18ec713b0991d34bd926d324966b1a0b90fad485b8ddb3f4ed2af138b
+    command: ["/etc/git-launcher/gateway.conf"]
+    ports:
+      - "8086:8086"
+    configs:
+      - source: gateway-pin
+        target: /etc/git-launcher/gateway.conf
+      - source: gateway-config
+        target: /etc/private-ai-gateway/gateway.config.json
+      - source: gateway-upstreams
+        target: /etc/private-ai-gateway/upstreams.seed.json
+    environment:
+      PRIVATE_AI_GATEWAY_CONFIG_PATH: /etc/private-ai-gateway/gateway.config.json
+      PRIVATE_AI_GATEWAY_CACHE_DIR: /var/lib/private-ai-gateway/cache
+    volumes:
+      - gateway-checkout:/var/lib/git-launcher
+      - gateway-state:/var/lib/private-ai-gateway
+      - /var/run/dstack.sock:/var/run/dstack.sock
+    restart: unless-stopped
+
+configs:
+  gateway-pin:
+    content: |
+      REPO_URL=https://github.com/Dstack-TEE/private-ai-gateway.git
+      COMMIT_SHA=${PRIVATE_AI_GATEWAY_REPO_COMMIT:?set PRIVATE_AI_GATEWAY_REPO_COMMIT to the audited full commit SHA}
+      WORK_DIR=/var/lib/git-launcher/private-ai-gateway
+
+  gateway-config:
+    content: |
+      {
+        "bind": "0.0.0.0:8086",
+        "state_dir": "/var/lib/private-ai-gateway",
+        "upstream_config_seed_path": "/etc/private-ai-gateway/upstreams.seed.json",
+        "admin_token": "${PRIVATE_AI_GATEWAY_ADMIN_TOKEN:?set PRIVATE_AI_GATEWAY_ADMIN_TOKEN}",
+        "dstack_endpoint": "unix:/var/run/dstack.sock",
+        "enable_e2ee": true
+      }
+
+  gateway-upstreams:
+    content: |
+      [
+        {
+          "name": "redpill",
+          "provider": "aci-service",
+          "base_url": "https://api.redpill.ai",
+          "models": {
+            "nvidia/nemotron-3.5-lightning": "nvidia/nemotron-3.5-lightning",
+            "z-ai/glm-5.3": "z-ai/glm-5.3",
+            "qwen/qwen3.8-27b": "qwen/qwen3.8-27b",
+            "meta/muse-glimmer-30b": "meta/muse-glimmer-30b",
+            "deepseek/deepseek-v4-flash-0731": "deepseek/deepseek-v4-flash-0731",
+            "z-ai/glm-5.3-flash": "z-ai/glm-5.3-flash"
+          },
+          "bearer_token": "${REDPILL_API_KEY:?set REDPILL_API_KEY}",
+          "accepted_subjects": [
+            "app-id:0xfdb7a14e5a6675f752e2cb69c9067a98ca402918"
+          ],
+          "accepted_dstack_kms_root_public_keys": [
+            "0334c76e0c3f52ec64cbf9bbf5c910c272330166fd656c0a86bb330963e46910e1"
+          ],
+          "pccs_url": "https://pccs.phala.network"
+        },
+        {
+          "name": "openrouter",
+          "provider": "openai-compatible",
+          "base_url": "https://openrouter.ai/api",
+          "models": {
+            "nvidia/nemotron-3.5-lightning:free": "nvidia/nemotron-3.5-lightning:free",
+            "poolside/laguna-s-2.1:free": "poolside/laguna-s-2.1:free",
+            "poolside/laguna-m.1:free": "poolside/laguna-m.1:free",
+            "nvidia/nemotron-3-super-120b-a12b:free": "nvidia/nemotron-3-super-120b-a12b:free",
+            "cohere/north-mini-code:free": "cohere/north-mini-code:free",
+            "nvidia/nemotron-3-ultra-550b-a55b:free": "nvidia/nemotron-3-ultra-550b-a55b:free",
+            "x-ai/grok-4.1-fast": "x-ai/grok-4.1-fast",
+            "deepseek/deepseek-v3.2": "deepseek/deepseek-v3.2",
+            "moonshotai/kimi-latest": "moonshotai/kimi-latest"
+          },
+          "bearer_token": "${OPENROUTER_API_KEY:?set OPENROUTER_API_KEY}"
+        }
+      ]
+
+volumes:
+  gateway-checkout:
+  gateway-state:

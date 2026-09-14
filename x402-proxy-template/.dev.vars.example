@@ -1,0 +1,4 @@
+# Local secrets only. Public payment settings are in wrangler.jsonc.
+# Copy this file to .dev.vars, then append a generated JWT_SECRET:
+# node -e "console.log('JWT_SECRET=' + require('crypto').randomBytes(32).toString('hex'))" >> .dev.vars
+# Never commit .dev.vars or reuse its secret for production.

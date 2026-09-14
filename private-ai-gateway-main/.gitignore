@@ -1,0 +1,11 @@
+/target
+/.venv
+.env
+.env.*
+!.env.example
+*.log
+*.tmp
+__pycache__/
+*.py[cod]
+.DS_Store
+clients/pi-provider/packages/*/dist/

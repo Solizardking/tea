@@ -1,0 +1,21 @@
+# Node
+node_modules/
+dist/
+
+# Environment
+.env
+.env.local
+
+# Keys
+*.pem
+*-payer.json
+.keys/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,17 @@
+{
+  "name": "x402-checkout",
+  "version": "0.1.0",
+  "private": true,
+  "engines": { "node": ">=22" },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "stripe": "^17.7.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "server": "node server.js",
+    "test": "node --test test/*.test.js"
+  }
+}

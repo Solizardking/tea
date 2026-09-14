@@ -1,0 +1,152 @@
+{
+  "name": "solana_redpill_verifier",
+  "version": "0.2.0",
+  "spec": "pinocchio-manifest",
+  "programId": "BnoUSPTE88ebzLb74RAnTogddDMzyBPtkmKxiRoRJG4L",
+  "summary": "Versioned proof registry for RedPill TEE attestations — stores tamper-evident on-chain records with cryptographic binding between the TEE signing key and the signed inference payload.",
+  "instructions": [
+    {
+      "name": "initCounter",
+      "discriminator": 0,
+      "summary": "One-time setup: create the global V1 ProofCounter PDA.",
+      "accounts": [
+        { "name": "payer",          "signer": true,  "writable": true },
+        { "name": "counterAccount", "signer": false, "writable": true,  "pda": { "seeds": ["proof_counter"] } },
+        { "name": "systemProgram",  "signer": false, "writable": false }
+      ],
+      "args": []
+    },
+    {
+      "name": "storeProof",
+      "discriminator": 1,
+      "summary": "V1 — store a TeeProof. Secp256k1 ix must be at index 0 when verifySig=1.",
+      "accounts": [
+        { "name": "payer",               "signer": true,  "writable": true },
+        { "name": "proofAccount",        "signer": false, "writable": true,  "pda": { "seeds": ["tee_proof", "quote_hash"] } },
+        { "name": "counterAccount",      "signer": false, "writable": true,  "pda": { "seeds": ["proof_counter"] } },
+        { "name": "systemProgram",       "signer": false, "writable": false },
+        { "name": "instructionsSysvar",  "signer": false, "writable": false, "optional": true }
+      ],
+      "args": [
+        { "name": "quoteHash",      "type": { "array": ["u8", 32] }, "offset": 0  },
+        { "name": "signingAddress", "type": { "array": ["u8", 20] }, "offset": 32 },
+        { "name": "isValid",        "type": "bool",                  "offset": 52 },
+        { "name": "verifySig",      "type": "bool",                  "offset": 53 }
+      ]
+    },
+    {
+      "name": "storeProofV2",
+      "discriminator": 2,
+      "summary": "V2 — store a TeeProofV2 with flexible secp ix index, message hash binding, and sharded day counter.",
+      "security": [
+        "secp256k1 ix at secp_ix_index signs exactly signed_payload_hash (32 bytes) when verificationLevel >= 1",
+        "signed_payload_hash = SHA256(canonical_signed_message) prevents signer-substitution attacks",
+        "expires_at guard rejects stale proofs",
+        "sharded day counter eliminates global write-lock"
+      ],
+      "accounts": [
+        { "name": "payer",              "signer": true,  "writable": true },
+        { "name": "proofAccount",       "signer": false, "writable": true,  "pda": { "seeds": ["tee_proof_v2", "signed_payload_hash"] } },
+        { "name": "dayCounter",         "signer": false, "writable": true,  "pda": { "seeds": ["proof_counter_day", "day_tag"] } },
+        { "name": "systemProgram",      "signer": false, "writable": false },
+        { "name": "instructionsSysvar", "signer": false, "writable": false }
+      ],
+      "args": [
+        { "name": "secpIxIndex",            "type": "u16",                   "offset": 0   },
+        { "name": "verificationLevel",      "type": "u8",                    "offset": 2   },
+        { "name": "signedPayloadHash",      "type": { "array": ["u8", 32] }, "offset": 3   },
+        { "name": "quoteHash",              "type": { "array": ["u8", 32] }, "offset": 35  },
+        { "name": "requestHash",            "type": { "array": ["u8", 32] }, "offset": 67  },
+        { "name": "responseHash",           "type": { "array": ["u8", 32] }, "offset": 99  },
+        { "name": "modelHash",              "type": { "array": ["u8", 32] }, "offset": 131 },
+        { "name": "attestationReportHash",  "type": { "array": ["u8", 32] }, "offset": 163 },
+        { "name": "composeHash",            "type": { "array": ["u8", 32] }, "offset": 195 },
+        { "name": "signingAddress",         "type": { "array": ["u8", 20] }, "offset": 227 },
+        { "name": "verifierSetHash",        "type": { "array": ["u8", 32] }, "offset": 247 },
+        { "name": "policyVersion",          "type": "u32",                   "offset": 279 },
+        { "name": "nonce",                  "type": { "array": ["u8", 32] }, "offset": 283 },
+        { "name": "expiresAt",              "type": "i64",                   "offset": 315 },
+        { "name": "dayTag",                 "type": { "array": ["u8", 8] },  "offset": 323 }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "TeeProof",
+      "discriminator": 84,
+      "size": 102,
+      "pda": { "seeds": ["tee_proof", "quote_hash"] },
+      "fields": [
+        { "name": "quoteHash",      "type": { "array": ["u8", 32] }, "offset": 1  },
+        { "name": "signingAddress", "type": { "array": ["u8", 20] }, "offset": 33 },
+        { "name": "isValid",        "type": "bool",                  "offset": 53 },
+        { "name": "timestamp",      "type": "i64",                   "offset": 54 },
+        { "name": "slot",           "type": "u64",                   "offset": 62 },
+        { "name": "submitter",      "type": "pubkey",                "offset": 70 }
+      ]
+    },
+    {
+      "name": "ProofCounter",
+      "discriminator": 67,
+      "size": 9,
+      "pda": { "seeds": ["proof_counter"] },
+      "fields": [
+        { "name": "count", "type": "u64", "offset": 1 }
+      ]
+    },
+    {
+      "name": "TeeProofV2",
+      "discriminator": 86,
+      "size": 372,
+      "pda": { "seeds": ["tee_proof_v2", "signed_payload_hash"] },
+      "fields": [
+        { "name": "version",               "type": "u8",                    "offset": 1   },
+        { "name": "verificationLevel",     "type": "u8",                    "offset": 2   },
+        { "name": "status",                "type": "u8",                    "offset": 3   },
+        { "name": "quoteHash",             "type": { "array": ["u8", 32] }, "offset": 4   },
+        { "name": "signedPayloadHash",     "type": { "array": ["u8", 32] }, "offset": 36  },
+        { "name": "requestHash",           "type": { "array": ["u8", 32] }, "offset": 68  },
+        { "name": "responseHash",          "type": { "array": ["u8", 32] }, "offset": 100 },
+        { "name": "modelHash",             "type": { "array": ["u8", 32] }, "offset": 132 },
+        { "name": "attestationReportHash", "type": { "array": ["u8", 32] }, "offset": 164 },
+        { "name": "composeHash",           "type": { "array": ["u8", 32] }, "offset": 196 },
+        { "name": "signingAddress",        "type": { "array": ["u8", 20] }, "offset": 228 },
+        { "name": "verifierSetHash",       "type": { "array": ["u8", 32] }, "offset": 248 },
+        { "name": "policyVersion",         "type": "u32",                   "offset": 280 },
+        { "name": "nonce",                 "type": { "array": ["u8", 32] }, "offset": 284 },
+        { "name": "expiresAt",             "type": "i64",                   "offset": 316 },
+        { "name": "timestamp",             "type": "i64",                   "offset": 324 },
+        { "name": "slot",                  "type": "u64",                   "offset": 332 },
+        { "name": "submitter",             "type": "pubkey",                "offset": 340 }
+      ]
+    },
+    {
+      "name": "ProofCounterDay",
+      "discriminator": 68,
+      "size": 17,
+      "pda": { "seeds": ["proof_counter_day", "day_tag"] },
+      "fields": [
+        { "name": "dayTag", "type": { "array": ["u8", 8] }, "offset": 1 },
+        { "name": "count",  "type": "u64",                  "offset": 9 }
+      ]
+    }
+  ],
+  "errors": [
+    { "code": 6000, "name": "InvalidDiscriminator",          "msg": "Account discriminator mismatch" },
+    { "code": 6001, "name": "InvalidPda",                    "msg": "PDA derivation mismatch" },
+    { "code": 6002, "name": "AccountAlreadyInitialized",     "msg": "Account already initialized" },
+    { "code": 6003, "name": "AccountDataTooSmall",           "msg": "Account data too small to deserialize" },
+    { "code": 6004, "name": "InvalidSigningAddress",         "msg": "Signing address mismatch (V1)" },
+    { "code": 6005, "name": "ArithmeticOverflow",            "msg": "Arithmetic overflow" },
+    { "code": 6006, "name": "SecpIxNotFound",                "msg": "No secp256k1 instruction at specified index" },
+    { "code": 6007, "name": "SecpIxWrongProgram",            "msg": "Instruction at secp_ix_index is not the secp256k1 precompile" },
+    { "code": 6008, "name": "SecpIxMustPrecedeCurrentIx",   "msg": "secp_ix_index must be before the storeProofV2 instruction" },
+    { "code": 6009, "name": "SecpMessageHashMismatch",       "msg": "Secp message does not match signed_payload_hash" },
+    { "code": 6010, "name": "SecpAddressMismatch",           "msg": "Recovered Ethereum address does not match signing_address" },
+    { "code": 6011, "name": "PayloadHashMismatch",           "msg": "Canonical payload hash mismatch" },
+    { "code": 6012, "name": "ProofExpired",                  "msg": "Proof has expired (expires_at in the past)" },
+    { "code": 6013, "name": "VerifierNotAuthorized",         "msg": "Verifier not in registry or revoked" },
+    { "code": 6014, "name": "NullifierAlreadyConsumed",      "msg": "Nullifier already consumed — replay detected" },
+    { "code": 6015, "name": "InvalidProofStatus",            "msg": "Proof status does not permit this operation" }
+  ]
+}

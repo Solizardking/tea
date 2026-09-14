@@ -1,0 +1,19 @@
+{
+	"name": "clawd-x402-facilitator",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"description": "x402 facilitator that verifies and settles Solana payments via Kora RPC",
+	"scripts": {
+		"start": "tsx src/index.ts",
+		"test": "tsx --test test/*.test.ts"
+	},
+	"dependencies": {
+		"@solana/kora": "0.2.1"
+	},
+	"devDependencies": {
+		"@types/node": "24.13.3",
+		"tsx": "4.21.0",
+		"typescript": "5.9.3"
+	}
+}

@@ -1,0 +1,56 @@
+{
+  "name": "@clawd/tee-verifier",
+  "version": "0.1.0",
+  "description": "CLAWD unified TEE verifier — multi-provider attestation and Solana SVM TeeProof anchoring (EVM is legacy)",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "bin": {
+    "clawd-verifier": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsx bin/cli.ts",
+    "test": "tsx --test src/core/settlement.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "tee",
+    "attestation",
+    "tdx",
+    "nvidia",
+    "confidential-ai",
+    "clawd",
+    "solana",
+    "dcap",
+    "on-chain",
+    "verification"
+  ],
+  "author": "CLAWD",
+  "license": "MIT",
+  "dependencies": {
+    "@solana/web3.js": "^1.98.0",
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "tsup": "^8.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

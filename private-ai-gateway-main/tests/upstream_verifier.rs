@@ -1,0 +1,149 @@
+mod common;
+
+use std::collections::HashMap;
+use std::sync::Arc;
+
+use async_trait::async_trait;
+use private_ai_gateway::aci::receipt::ChannelBinding;
+use private_ai_gateway::aci::upstream::{
+    UpstreamBackend, UpstreamError, UpstreamRequest, UpstreamResponse,
+};
+use private_ai_gateway::aci::verifier::validate_aci_report_binding;
+use private_ai_gateway::aggregator::service::{
+    AciService, AciServiceConfig, FixedClock, InMemoryReceiptStore,
+};
+
+use common::{verified_event, StaticKeyProvider, StubQuoter};
+
+struct NoopUpstream;
+
+#[async_trait]
+impl UpstreamBackend for NoopUpstream {
+    fn name(&self) -> &str {
+        "noop-upstream"
+    }
+
+    fn url_origin(&self) -> Option<&str> {
+        Some("https://noop-upstream.example")
+    }
+
+    async fn forward(&self, _req: UpstreamRequest) -> Result<UpstreamResponse, UpstreamError> {
+        Ok(UpstreamResponse {
+            status_code: 200,
+            body: b"{}".to_vec(),
+            headers: HashMap::new(),
+            served_instance_id: None,
+        })
+    }
+}
+
+fn service() -> Arc<AciService> {
+    let keys = Arc::new(StaticKeyProvider::default());
+    let quoter = Arc::new(StubQuoter::default());
+    let upstream = Arc::new(NoopUpstream);
+    let store = Arc::new(InMemoryReceiptStore::default());
+    Arc::new(
+        AciService::new(
+            keys,
+            quoter,
+            upstream,
+            store,
+            AciServiceConfig::for_test(),
+            Arc::new(FixedClock(1_000)),
+        )
+        .unwrap(),
+    )
+}
+
+#[tokio::test]
+async fn aci_report_binding_validation_accepts_self_consistent_report() {
+    let report = service()
+        .attestation_report(Some(
+            "ab0000000000000000000000000000000000000000000000000000000000cdef".to_string(),
+        ))
+        .await
+        .unwrap();
+    let validated = validate_aci_report_binding(
+        &report,
+        Some("ab0000000000000000000000000000000000000000000000000000000000cdef"),
+        1_000,
+        Some(br#"{"raw":"report"}"#),
+    )
+    .unwrap();
+
+    assert_eq!(
+        validated.workload_keyset_digest,
+        report.workload_keyset_digest
+    );
+    assert!(validated.evidence.is_some());
+}
+
+#[tokio::test]
+async fn aci_report_binding_validation_rejects_wrong_nonce() {
+    let report = service()
+        .attestation_report(Some(
+            "ab0000000000000000000000000000000000000000000000000000000000cdef".to_string(),
+        ))
+        .await
+        .unwrap();
+    let err = validate_aci_report_binding(
+        &report,
+        Some("ff0000000000000000000000000000000000000000000000000000000000ffff"),
+        1_000,
+        None,
+    )
+    .unwrap_err()
+    .to_string();
+
+    assert!(err.starts_with("statement digest is "), "{err}");
+}
+
+#[tokio::test]
+async fn aci_report_binding_validation_rejects_tampered_keyset_digest() {
+    let mut report = service()
+        .attestation_report(Some(
+            "ab0000000000000000000000000000000000000000000000000000000000cdef".to_string(),
+        ))
+        .await
+        .unwrap();
+    report.workload_keyset_digest = format!("sha256:{}", "00".repeat(32));
+
+    let err = validate_aci_report_binding(
+        &report,
+        Some("ab0000000000000000000000000000000000000000000000000000000000cdef"),
+        1_000,
+        None,
+    )
+    .unwrap_err()
+    .to_string();
+
+    assert!(
+        err.contains("sha256 over the keyset JCS form is ") && err.contains(&"00".repeat(32)),
+        "{err}"
+    );
+}
+
+#[tokio::test]
+async fn service_fails_if_selected_backend_cannot_enforce_channel_binding() {
+    let event = private_ai_gateway::aci::receipt::UpstreamVerifiedEvent {
+        url_origin: Some("https://noop-upstream.example".to_string()),
+        verifier_id: "fixture-verifier/v1".to_string(),
+        channel_bindings: vec![ChannelBinding::TlsSpkiSha256 {
+            origin: "https://noop-upstream.example".to_string(),
+            spki_sha256: "aa".repeat(32),
+        }],
+        ..verified_event("noop-upstream", "model-a")
+    };
+    let err = service()
+        .forward_chat_completion(
+            br#"{"model":"model-a","messages":[]}"#,
+            None,
+            false,
+            Some(event),
+        )
+        .await
+        .unwrap_err()
+        .to_string();
+
+    assert!(err.contains("cannot enforce upstream channel bindings"));
+}

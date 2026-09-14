@@ -1,0 +1,40 @@
+[
+  {
+    "name": "redpill",
+    "provider": "aci-service",
+    "base_url": "https://api.redpill.ai",
+    "models": {
+      "nvidia/nemotron-3.5-lightning": "nvidia/nemotron-3.5-lightning",
+      "z-ai/glm-5.3": "z-ai/glm-5.3",
+      "qwen/qwen3.8-27b": "qwen/qwen3.8-27b",
+      "meta/muse-glimmer-30b": "meta/muse-glimmer-30b",
+      "deepseek/deepseek-v4-flash-0731": "deepseek/deepseek-v4-flash-0731",
+      "z-ai/glm-5.3-flash": "z-ai/glm-5.3-flash"
+    },
+    "bearer_token": "${REDPILL_API_KEY}",
+    "accepted_subjects": [
+      "app-id:0xfdb7a14e5a6675f752e2cb69c9067a98ca402918"
+    ],
+    "accepted_dstack_kms_root_public_keys": [
+      "0334c76e0c3f52ec64cbf9bbf5c910c272330166fd656c0a86bb330963e46910e1"
+    ],
+    "pccs_url": "https://pccs.phala.network"
+  },
+  {
+    "name": "openrouter",
+    "provider": "openai-compatible",
+    "base_url": "https://openrouter.ai/api",
+    "models": {
+      "nvidia/nemotron-3.5-lightning:free": "nvidia/nemotron-3.5-lightning:free",
+      "poolside/laguna-s-2.1:free": "poolside/laguna-s-2.1:free",
+      "poolside/laguna-m.1:free": "poolside/laguna-m.1:free",
+      "nvidia/nemotron-3-super-120b-a12b:free": "nvidia/nemotron-3-super-120b-a12b:free",
+      "cohere/north-mini-code:free": "cohere/north-mini-code:free",
+      "nvidia/nemotron-3-ultra-550b-a55b:free": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "x-ai/grok-4.1-fast": "x-ai/grok-4.1-fast",
+      "deepseek/deepseek-v3.2": "deepseek/deepseek-v3.2",
+      "moonshotai/kimi-latest": "moonshotai/kimi-latest"
+    },
+    "bearer_token": "${OPENROUTER_API_KEY}"
+  }
+]

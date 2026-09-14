@@ -1,0 +1,24 @@
+{
+  "name": "@redpill-ai/solana-verifier",
+  "version": "0.1.0",
+  "description": "Solana SVM on-chain TEE attestation verifier for RedPill AI",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "solana-redpill-verifier": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "cli": "node ./dist/cli.js",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.98.0",
+    "viem": "^2.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^22.0.0"
+  }
+}

@@ -1,0 +1,28 @@
+# CLAWD verifier stack
+#
+#   dstack-verifier    — deep verification (Rust + QEMU): replays TDX boot
+#                        measurements so you trust only Intel silicon.
+#                        Required only for --deep mode.
+#   clawd-tee-gateway  — proxies AI inference, signs request/response hashes
+#                        inside the TEE, anchors TeeProofV2 records on Solana.
+#
+# Start: docker compose up -d
+# Check: curl http://localhost:8080/          (dstack-verifier)
+#        curl http://localhost:8081/health    (gateway)
+services:
+  dstack-verifier:
+    image: dstacktee/dstack-verifier
+    ports:
+      - "8080:8080"
+    restart: always
+
+  clawd-tee-gateway:
+    build:
+      context: ../clawd-tee-gateway
+    ports:
+      - "8081:8081"
+    env_file:
+      - ../clawd-tee-gateway/.env
+    environment:
+      PORT: "8081"
+    restart: always

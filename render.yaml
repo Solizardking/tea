@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: clawd-tee-gateway
+    runtime: docker
+    repo: https://github.com/Solizardking/clawd-tee
+    branch: main
+    rootDir: clawd-tee-gateway
+    dockerContext: .
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    plan: free
+    autoDeployTrigger: commit
+    envVars:
+      - key: UPSTREAM_URL
+        value: https://api.openai.com
+      - key: UPSTREAM_API_KEY
+        sync: false
+      - key: ADMIN_TOKEN
+        sync: false
+      - key: SOLANA_RPC_URL
+        value: https://api.devnet.solana.com
+      - key: REDPILL_PROGRAM_ID
+        value: BnoUSPTE88ebzLb74RAnTogddDMzyBPtkmKxiRoRJG4L
+      - key: SOLANA_KEYPAIR_PATH
+        value: /etc/secrets/devnet-payer.json
+      - key: SIGNING_KEY_PEM_PATH
+        value: /etc/secrets/tee-signing-key.pem
+      - key: SAS_PROOF_THRESHOLD
+        value: "0"
+      - key: VERIFICATION_LEVEL
+        value: "0"
+      - key: PROOF_TTL_SECS
+        value: "86400"
+      - key: RUST_LOG
+        value: clawd_tee_gateway=info,tower_http=info

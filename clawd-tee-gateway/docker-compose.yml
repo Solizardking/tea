@@ -1,0 +1,37 @@
+# docker-compose.yml — CLAWD TEE Gateway
+#
+# For TDX deployment:  use dstack / phala-cloud to wrap this compose file.
+# The TEE platform will:
+#   1. Hash this compose file → mr_config measurement
+#   2. Pass signing_address + nonce through report_data
+#   3. Issue a TDX quote the on-chain verifier can check
+#
+# For local development: docker compose up
+
+services:
+  clawd-tee-gateway:
+    build: .
+    image: clawd-tee-gateway:latest
+    container_name: clawd-tee-gateway
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      RUST_LOG: "clawd_tee_gateway=info,tower_http=debug"
+    # TDX-specific: pass through the guest device
+    devices:
+      - /dev/tdx_guest:/dev/tdx_guest
+    volumes:
+      # Optional: persist signing key across restarts
+      # Mount a dstack-managed encrypted volume here in production
+      - tee-keys:/keys
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  tee-keys:

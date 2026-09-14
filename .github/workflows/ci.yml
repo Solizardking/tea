@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Build and Security Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: clients/typescript/package-lock.json
+
+      - name: Install ripgrep
+        run: sudo apt-get update -y && sudo apt-get install -y ripgrep
+
+      - name: Security scan
+        run: sh scripts/security-scan.sh
+
+      - name: Security guard tests
+        run: sh scripts/test-security-guards.sh
+
+      - name: Publish history scan
+        run: sh scripts/check-publish-history.sh
+
+      - name: Rust formatting
+        run: cargo fmt --check
+
+      - name: Check on-chain program
+        run: cargo check -p solana-redpill-verifier
+
+      - name: Check gateway
+        run: cargo check -p clawd-tee-gateway
+
+      - name: Test gateway (ACI receipts + nonce binding)
+        run: cargo test -p clawd-tee-gateway
+
+      - name: Build TypeScript client
+        working-directory: clients/typescript
+        run: |
+          npm ci
+          npm run build
+
+      - name: Test redpill-verifier Solana defaults
+        working-directory: redpill-verifier/js
+        run: |
+          npm ci
+          npm test
+
+      - name: Test clawd-verifier Solana defaults
+        working-directory: clawd-verifier/js
+        run: |
+          npm ci
+          npm test

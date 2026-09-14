@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@solana/web3.js": "^1.98.0",
-    "viem": "^2.0.0"
+    "viem": "^2.56.3"
   },
   "devDependencies": {
     "typescript": "^5.0.0",

@@ -24,7 +24,7 @@ hex          = "0.4"
 subtle       = "2"
 
 # Solana
-solana-sdk    = "2.1"
+solana-sdk    = "5.0"
 solana-client = "2.1"
 
 # Solana Attestation Service

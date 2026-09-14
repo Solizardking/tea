@@ -48,7 +48,7 @@ Inspired by the [RedPill verifier lineage](./redpill-verifier) — rewritten for
 | You want… | Go here |
 | --- | --- |
 | Run inference + stamp proofs | [`clawd-tee-gateway/`](./clawd-tee-gateway) |
-| Gasless $CLAWD x402 (Kora relayer) | [`clawd-kora/`](./clawd-kora) · proxy: [`x402-proxy-template/`](./x402-proxy-template) |
+| Gasless $CLAWD x402 (Kora relayer) | [`clawd-kora/`](./clawd-kora) · proxy: [`x402-proxy-template/`](./x402-proxy-template) · **public animated**: [`docs/gasless-aci.html`](./docs/gasless-aci.html) |
 | Verify hardware (Phala / NearAI / Chutes / Tinfoil) | [`redpill-verifier/`](./redpill-verifier) · skill: [`verify-tee`](./redpill-verifier/.claude/skills/verify-tee/SKILL.md) |
 | One package: verify **and** anchor | [`clawd-verifier/`](./clawd-verifier) |
 | On-chain program (V1 + V2 PDAs) | [`program/`](./program) |

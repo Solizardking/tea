@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-1KRG0F1DHL"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-1KRG0F1DHL');</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Gasless Solana signing with $CLAWD via Kora + Private AI Gateway (ACI) attestation.">
+<link rel="icon" type="image/png" href="/favicon.png">
+<title>TEA — Gasless $CLAWD + Private AI Gateway</title>
+<link rel="stylesheet" href="/fonts/diatype.css" />
+<style>
+:root { color-scheme: dark; --g:#14F195; --p:#9945FF; --bg:#090b0e; --card:#101419; --line:#28323e; --mute:#9ba7b5; }
+* { box-sizing: border-box; }
+html, body { margin:0; background:var(--bg); color:#e5e2e1; font-family:"ABC Diatype",system-ui,sans-serif; line-height:1.55; }
+a { color:var(--g); } a:hover { color:var(--p); }
+header, nav, main, footer { max-width:980px; margin:0 auto; padding:12px 16px; }
+header { border-bottom:1px solid var(--line); display:flex; gap:12px; align-items:center; }
+.kicker { color:var(--mute); font-size:12px; letter-spacing:.16em; text-transform:uppercase; margin:0 0 6px; }
+h1 { color:#fff; font-size:1.7rem; margin:0 0 6px; }
+h2 { color:var(--g); font-size:1.05rem; margin:1.5rem 0 .55rem; }
+nav { display:flex; flex-wrap:wrap; gap:8px; border-bottom:1px solid var(--line); }
+nav a { min-height:40px; padding:8px 14px; border:1px solid var(--line); border-radius:6px; text-decoration:none; color:#e5e2e1; background:var(--card); display:inline-flex; align-items:center; }
+nav a[aria-current="page"], nav a:hover { border-color:var(--g); color:var(--g); }
+pre, code { font-family:"ABC Diatype Semi-Mono",ui-monospace,monospace; color:var(--g); }
+pre { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:14px; overflow-x:auto; font-size:13px; }
+.badge { display:inline-block; padding:2px 8px; border-radius:999px; border:1px solid #14F19566; color:var(--g); font-size:12px; margin-right:6px; }
+.flow {
+  display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; margin:18px 0 8px;
+  position:relative;
+}
+@media (max-width:800px){ .flow { grid-template-columns:1fr; } }
+.node {
+  background:linear-gradient(160deg,#121820,#0c1016 70%);
+  border:1px solid var(--line); border-radius:10px; padding:12px 10px; min-height:92px;
+  position:relative; overflow:hidden;
+  animation: rise .7s ease both;
+}
+.node:nth-child(1){ animation-delay:.05s } .node:nth-child(2){ animation-delay:.15s }
+.node:nth-child(3){ animation-delay:.25s } .node:nth-child(4){ animation-delay:.35s }
+.node:nth-child(5){ animation-delay:.45s }
+.node .t { font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--mute); }
+.node .n { color:#fff; font-weight:700; margin-top:4px; font-size:14px; }
+.node .d { color:var(--mute); font-size:12px; margin-top:6px; }
+.node::after {
+  content:""; position:absolute; inset:auto -40% -40% auto; width:120px; height:120px;
+  background:radial-gradient(circle, #14F19533, transparent 70%);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+.packet {
+  height:3px; border-radius:99px; margin:10px 0 18px;
+  background:linear-gradient(90deg, transparent, var(--g), var(--p), transparent);
+  background-size:200% 100%;
+  animation: slide 1.8s linear infinite;
+}
+@keyframes slide { from { background-position: 100% 0 } to { background-position: -100% 0 } }
+@keyframes pulse { 0%,100%{ opacity:.35; transform:scale(1)} 50%{ opacity:.9; transform:scale(1.15)} }
+@keyframes rise { from { opacity:0; transform:translateY(10px)} to { opacity:1; transform:none} }
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+@media (max-width:800px){ .grid2 { grid-template-columns:1fr; } }
+.card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; }
+.live { display:inline-flex; align-items:center; gap:6px; color:var(--g); font-size:12px; }
+.live i { width:8px; height:8px; border-radius:99px; background:var(--g); box-shadow:0 0 10px var(--g); animation: pulse 1.2s infinite; }
+table { width:100%; border-collapse:collapse; font-size:14px; }
+td, th { border-bottom:1px solid var(--line); padding:8px 6px; text-align:left; vertical-align:top; }
+th { color:var(--mute); font-weight:600; }
+</style>
+</head>
+<body>
+<header>
+  <img src="/clawd-gateway-icon.png" alt="" width="40" height="40" style="border-radius:999px;border:1px solid #28323e">
+  <div>
+    <p class="kicker">public · tea / clawd-tee</p>
+    <h1>Gasless $CLAWD + Private AI Gateway</h1>
+    <p>Users pay in <code>$CLAWD</code>; Kora pays SOL fees. ACI attestation binds gateway identity to every receipt.</p>
+  </div>
+</header>
+<nav aria-label="Agent pages">
+  <a href="/agent/index.md">Home</a>
+  <a href="/tee">TEE desk</a>
+  <a href="/agent/gasless-aci.html" aria-current="page">Gasless + ACI</a>
+  <a href="https://github.com/Solizardking/tea" rel="noopener">tea (GitHub)</a>
+</nav>
+<main>
+  <p><span class="badge">public</span><span class="badge">no keys in worker</span><span class="live"><i></i> animated live path</span></p>
+
+  <h2>Payment path (animated)</h2>
+  <div class="flow" aria-label="Gasless payment flow">
+    <div class="node"><div class="t">01</div><div class="n">Client</div><div class="d">HTTP request</div></div>
+    <div class="node"><div class="t">02</div><div class="n">x402 proxy</div><div class="d">402 gate · JWT cookie</div></div>
+    <div class="node"><div class="t">03</div><div class="n">Facilitator</div><div class="d">/verify · /settle</div></div>
+    <div class="node"><div class="t">04</div><div class="n">Kora RPC</div><div class="d">JSON-RPC signer</div></div>
+    <div class="node"><div class="t">05</div><div class="n">Solana</div><div class="d">settlement</div></div>
+  </div>
+  <div class="packet" aria-hidden="true"></div>
+  <pre>Client ──HTTP 402──▶ x402-proxy-template ──/verify /settle──▶ facilitator ──JSON-RPC──▶ Kora RPC ──▶ Solana
+                         │                                         │
+                         └── origin: clawd-tee-gateway             └── kora.toml allowlists $CLAWD</pre>
+
+  <div class="grid2">
+    <div class="card">
+      <h2 style="margin-top:0">Three units</h2>
+      <table>
+        <tr><th>Unit</th><th>Path</th><th>Role</th></tr>
+        <tr><td>Kora operator</td><td><code>kora.toml</code>, <code>signers.toml</code></td><td>Policy + memory signer</td></tr>
+        <tr><td>Facilitator</td><td><code>facilitator/</code></td><td>x402 GET /supported, POST /verify, POST /settle</td></tr>
+        <tr><td>Payment proxy</td><td><code>x402-proxy-template</code></td><td>HTTP 402 + JWT after settle</td></tr>
+      </table>
+      <p style="font-size:13px;color:var(--mute)">Mint: <code>8cHzQHUS2s2h8TzCmfqPKYiM4dSt4roa3n7MyRLApump</code>. Never put Kora private keys in the Worker.</p>
+    </div>
+    <div class="card">
+      <h2 style="margin-top:0">Private AI Gateway (ACI)</h2>
+      <p>OpenAI-compatible gateway for Attested Confidential Inference. Relying parties check:</p>
+      <ol>
+        <li>Gateway attestation report</li>
+        <li>Provider verification event for the route</li>
+        <li>Signed receipt binding the response</li>
+      </ol>
+      <p style="font-size:13px;color:var(--mute)">Unpaid health: gateway <code>GET /health</code> · proxy <code>GET /__x402/health</code>. Chat requires payment or day-pass.</p>
+    </div>
+  </div>
+
+  <h2>Configure</h2>
+  <pre>cp .env.example .env
+# KORA_SIGNER_PRIVATE_KEY = base58 64-byte secret (operator host only)
+# allowed_spl_paid_tokens must include $CLAWD mint
+# price_source = "Mock" for local/dev</pre>
+
+  <h2>Run</h2>
+  <pre># T1 — Kora JSON-RPC (:8080)
+./scripts/start-kora.sh
+
+# T2 — facilitator (:3000)
+cd facilitator && npm install && npm start
+
+# T3 — payment proxy (:8787)
+cd ../x402-proxy-template && npm run dev</pre>
+
+  <h2>Check</h2>
+  <pre>curl -s http://127.0.0.1:8080 -H 'content-type: application/json' \
+  -H "x-api-key: $KORA_API_KEY" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"getConfig","params":{}}'
+
+curl -s http://127.0.0.1:3000/supported
+curl -s http://127.0.0.1:8787/__x402/health
+curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8787/__x402/protected
+# expect 402</pre>
+
+  <h2>ACI auditor strip</h2>
+  <table>
+    <tr><th>Check</th><th>Evidence</th></tr>
+    <tr><td>Gateway identity</td><td><code>GET /v1/aci/attestation?nonce=</code> + TEE quote / keyset digest</td></tr>
+    <tr><td>Upstream verified</td><td>receipt <code>upstream.verified</code> for provider + model</td></tr>
+    <tr><td>Response bound</td><td>receipt signature under attested receipt key</td></tr>
+    <tr><td>Fail-closed</td><td>unverified route never forwards the prompt</td></tr>
+  </table>
+
+  <p style="margin-top:1.5rem">Source: <a href="https://github.com/Solizardking/tea">github.com/Solizardking/tea</a> · <code>clawd-kora/</code> · <code>private-ai-gateway-main/</code> · <code>x402-proxy-template/</code></p>
+</main>
+<footer>
+  <p><a href="/agent/gasless-aci.md">Markdown</a> · <a href="/llms.txt">llms.txt</a> · <a href="/tee">TEE on desk</a></p>
+</footer>
+</body>
+</html>

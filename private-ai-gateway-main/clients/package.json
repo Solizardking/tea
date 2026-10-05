@@ -32,7 +32,7 @@
     "@opencode-ai/plugin": "1.18.24",
     "@types/bun": "^1.4.0",
     "@types/node": "^24.0.0",
-    "esbuild": "^0.25.0",
+    "esbuild": "^0.28.2",
     "opencode-ai": "1.18.24",
     "oxfmt": "^0.44.0",
     "oxlint": "^1.80.0",
